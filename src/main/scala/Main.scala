@@ -88,8 +88,14 @@ class Out(val out:java.io.PrintStream) {
       rows += (for { (i1, _, _) <- cols } yield res.getObject(i1).toString)
     }
     val widths = cols.map{case (i1, name, _) => Seq(name.size, rows.maxBy{row => row(i1 - 1).size}.size).max}
-    result(cols.map{case (i1, name, _) => s"%-${widths(i1 - 1)}s".format(name)}.mkString(" | "))
-    rows.foreach{row => result(row.zipWithIndex.map{case (r, i) => s"%-${widths(i)}s".format(r)}.mkString(" | "))}
+    def rowsep() = result("+" + cols.map{case (i1, name, _) => "-" * (widths(i1 - 1) + 2)}.mkString("+") + "+")
+    def outRow(row:Seq[String]) =
+      result("| " + row.zipWithIndex.map{case (r, i) => s"%-${widths(i)}s".format(r)}.mkString(" | ") + " |")
+    rowsep()
+    result("| " + cols.map{case (i1, name, _) => s"%-${widths(i1 - 1)}s".format(name)}.mkString(" | ") + " |")
+    rowsep()
+    rows.foreach(outRow(_))
+    rowsep()
   }
 }
 
