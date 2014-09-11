@@ -87,12 +87,12 @@ class Out(val out:java.io.PrintStream) {
     while(res.next()) {
       rows += (for { (i1, _, _) <- cols } yield res.getObject(i1).toString)
     }
-    val widths = cols.map{case (i1, name, _) => Seq(name.size, rows.maxBy{row => row(i1 - 1).size}.size).max}
+    val widths = cols.map{case (i1, name, _) => Math.max(name.size, rows.map{r => r(i1 - 1).size}.max)}
     def rowsep() = result("+" + cols.map{case (i1, name, _) => "-" * (widths(i1 - 1) + 2)}.mkString("+") + "+")
     def outRow(row:Seq[String]) =
       result("| " + row.zipWithIndex.map{case (r, i) => s"%-${widths(i)}s".format(r)}.mkString(" | ") + " |")
     rowsep()
-    result("| " + cols.map{case (i1, name, _) => s"%-${widths(i1 - 1)}s".format(name)}.mkString(" | ") + " |")
+    outRow(cols.map(_._2))
     rowsep()
     rows.foreach(outRow(_))
     rowsep()
