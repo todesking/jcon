@@ -36,22 +36,26 @@ object Main {
       args.user.foreach(props.setProperty("user", _))
       args.password.foreach(props.setProperty("password", _))
 
+      val terminal = scala.tools.jline.TerminalFactory.create()
+      terminal.init()
+      val reader = new scala.tools.jline.console.ConsoleReader(System.in, new java.io.PrintWriter(System.out), terminal)
+
       using(java.sql.DriverManager.getConnection(url, props)) {con =>
-        val ctx = new Context(con, new Out(System.out))
+        val ctx = new Context(con, new Out(System.out), reader)
         runREPL(ctx)
       }
+      terminal.restore()
     }
   }
 
   def runREPL(ctx:Context):Unit = {
-    val break = readCommand().execute(ctx)
+    val break = readCommand(ctx.in).execute(ctx)
     if(break) return
     else runREPL(ctx)
   }
 
-  def readCommand():Command = {
-    print("> ")
-    val line = readLine()
+  def readCommand(reader:scala.tools.jline.console.ConsoleReader):Command = {
+    val line = reader.readLine("> ")
     Command.parse(line)
   }
 }
@@ -60,7 +64,7 @@ case class Command(proc:Context=>Boolean) {
   def execute(ctx:Context):Boolean = proc(ctx)
 }
 
-class Context(val con:Connection, val out:Out)
+class Context(val con:Connection, val out:Out, val in:scala.tools.jline.console.ConsoleReader)
 
 class Out(val out:java.io.PrintStream) {
   def error(e:Throwable):Unit = {
