@@ -56,7 +56,8 @@ object Main {
 
   def readCommand(reader:scala.tools.jline.console.ConsoleReader):Command = {
     val line = reader.readLine("> ")
-    Command.parse(line)
+    if(line == null) return Command.Quit
+    else Command.parse(line)
   }
 }
 
