@@ -41,7 +41,7 @@ object Main {
       val reader = new scala.tools.jline.console.ConsoleReader(System.in, new java.io.PrintWriter(System.out), terminal)
 
       using(java.sql.DriverManager.getConnection(url, props)) {con =>
-        val ctx = new Context(con, new Out(System.out), reader)
+        val ctx = new Context(con, new Out(System.out, terminal), reader)
         runREPL(ctx)
       }
       terminal.restore()
@@ -67,7 +67,14 @@ case class Command(proc:Context=>Boolean) {
 
 class Context(val con:Connection, val out:Out, val in:scala.tools.jline.console.ConsoleReader)
 
-class Out(val out:java.io.PrintStream) {
+class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) {
+  implicit class DisplayWidth(self:String) {
+    def displayWidth:Int = {
+      val halfs = """[\u0020-\u007f]""".r.findAllIn(self).size
+      val fulls = self.size - halfs
+      halfs + fulls * 2
+    }
+  }
   def error(e:Throwable):Unit = {
     error(e.toString)
     e.getStackTrace.foreach{st => error(st.toString)}
@@ -88,10 +95,12 @@ class Out(val out:java.io.PrintStream) {
     while(res.next()) {
       rows += (for { (i1, _, _) <- cols } yield res.getObject(i1).toString)
     }
-    val widths = cols.map{case (i1, name, _) => Math.max(name.size, rows.map{r => r(i1 - 1).size}.max)}
+    val displayWidth = terminal.getWidth
+    var widths = cols.map{case (i1, name, _) => Math.max(name.displayWidth, rows.map{r => r(i1 - 1).displayWidth}.max)}
+    // if(widths.sum + (widths.size - 1) * 3/*sep*/ + 4/*start+end*/ > displayWidth)
     def rowsep() = result("+" + cols.map{case (i1, name, _) => "-" * (widths(i1 - 1) + 2)}.mkString("+") + "+")
     def outRow(row:Seq[String]) =
-      result("| " + row.zipWithIndex.map{case (r, i) => s"%-${widths(i)}s".format(r)}.mkString(" | ") + " |")
+      result("| " + row.zipWithIndex.map{case (r, i) => s"${r}${" " * (widths(i) - r.displayWidth)}"}.mkString(" | ") + " |")
     rowsep()
     outRow(cols.map(_._2))
     rowsep()
