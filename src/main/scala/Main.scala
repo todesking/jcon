@@ -96,7 +96,7 @@ class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) 
     val cols = for(i1 <- 1 to meta.getColumnCount) yield (i1, meta.getColumnName(i1), meta.getColumnType(i1))
     val rows = scala.collection.mutable.ArrayBuffer.empty[Seq[String]]
     while(res.next()) {
-      rows += (for { (i1, _, _) <- cols } yield res.getObject(i1).toString)
+      rows += (for { (i1, _, _) <- cols } yield res.getString(i1))
     }
     val displayWidth = terminal.getWidth
     var widths = cols.map{case (i1, name, _) => Math.max(name.displayWidth, rows.map{r => r(i1 - 1).displayWidth}.max)}
