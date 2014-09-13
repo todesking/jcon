@@ -91,17 +91,21 @@ class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) 
   def result(message:String):Unit = {
     out.println(s"${message}")
   }
+
+  def calcWidths(cols:Seq[(Int, String)], rows:Seq[Seq[String]], terminalWidth:Int):Seq[Int] =
+    cols.map{case (i1, name) => Math.max(name.displayWidth, rows.map{r => r(i1 - 1).displayWidth}.max)}
+
   def result(res:java.sql.ResultSet):Unit = {
     val meta = res.getMetaData
-    val cols = for(i1 <- 1 to meta.getColumnCount) yield (i1, meta.getColumnName(i1), meta.getColumnType(i1))
+    val cols = for(i1 <- 1 to meta.getColumnCount) yield (i1, meta.getColumnName(i1))
     val rows = scala.collection.mutable.ArrayBuffer.empty[Seq[String]]
     while(res.next()) {
-      rows += (for { (i1, _, _) <- cols } yield res.getString(i1))
+      rows += (for { (i1, _) <- cols } yield res.getString(i1))
     }
     val displayWidth = terminal.getWidth
-    var widths = cols.map{case (i1, name, _) => Math.max(name.displayWidth, rows.map{r => r(i1 - 1).displayWidth}.max)}
+    var widths = calcWidths(cols, rows, displayWidth)
     // if(widths.sum + (widths.size - 1) * 3/*sep*/ + 4/*start+end*/ > displayWidth)
-    def rowsep() = result("+" + cols.map{case (i1, name, _) => "-" * (widths(i1 - 1) + 2)}.mkString("+") + "+")
+    def rowsep() = result("+" + cols.map{case (i1, name) => "-" * (widths(i1 - 1) + 2)}.mkString("+") + "+")
     def outRow(row:Seq[String]) =
       result("| " + row.zipWithIndex.map{case (r, i) => s"${r}${" " * (widths(i) - r.displayWidth)}"}.mkString(" | ") + " |")
     rowsep()
