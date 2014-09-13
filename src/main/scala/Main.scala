@@ -5,30 +5,31 @@ import java.sql.Connection
 
 object Imports extends scalaz.syntax.ToIdOps {
   private type HasClose = {def close():Unit}
-  class Using[A <: HasClose](resource:A) {
+  class Using[A](resource:A, close:A => Unit) {
     def apply[B](f:A => B):B =
-      try { f(resource) } finally { resource.close() }
+      try { f(resource) } finally { close(resource) }
     def foreach(f:A => Unit) = apply(f)
   }
 
   def using[A <: HasClose](resource:A):Using[A] =
-    new Using(resource)
+    using(resource, _.close())
+  def using[A](resource:A, close:A => Unit) =
+    new Using(resource, close)
 }
 import Imports._
 
-class Args(raw:Array[String]) extends ScallopConf(raw) {
-  val user = opt[String]()
-  val password = opt[String]()
-  val url = trailArg[String]()
-}
-
-
 object Main {
+  class Args(raw:Array[String]) extends ScallopConf(raw) {
+    val user = opt[String]()
+    val password = opt[String]()
+    val url = trailArg[String]()
+  }
 
   def main(raw:Array[String]):Unit = {
     val args = new Args(raw)
-    if(!args.url.supplied) args.printHelp()
-    else {
+    if(!args.url.supplied) {
+      args.printHelp()
+    } else {
       println(s"connecting to url: ${args.url()}")
       val url = args.url()
 
@@ -36,17 +37,19 @@ object Main {
       args.user.foreach(props.setProperty("user", _))
       args.password.foreach(props.setProperty("password", _))
 
-      val terminal = scala.tools.jline.TerminalFactory.create()
-      terminal.init()
-      val reader = new scala.tools.jline.console.ConsoleReader(System.in, new java.io.PrintWriter(System.out), terminal)
-
-      using(java.sql.DriverManager.getConnection(url, props)) {con =>
-        val ctx = new Context(con, new Out(System.out, terminal), reader)
+      for {
+        con <- using(java.sql.DriverManager.getConnection(url, props))
+        terminal <- using[scala.tools.jline.Terminal](scala.tools.jline.TerminalFactory.create(), _.restore())
+      } {
+        terminal.init()
+        val ctx = new Context(con, new Out(System.out, terminal), createReader(terminal))
         runREPL(ctx)
       }
-      terminal.restore()
     }
   }
+
+  def createReader(terminal:scala.tools.jline.Terminal) =
+    new scala.tools.jline.console.ConsoleReader(System.in, new java.io.PrintWriter(System.out), terminal)
 
   def runREPL(ctx:Context):Unit = {
     val break = readCommand(ctx.in).execute(ctx)
