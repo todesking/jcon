@@ -40,6 +40,7 @@ object Main {
         registerSignal("CONT"){()=> terminal.reset() }
         terminal.init()
         val ctx = new Context(con, new Out(System.out, terminal), createReader(terminal))
+        ctx.out.message("type :help or ? to show usage")
         runREPL(ctx)
       }
     }

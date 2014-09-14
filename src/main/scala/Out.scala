@@ -3,6 +3,7 @@ package com.todesking.jcon
 import Implicits._
 
 class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) {
+  def message(m:String):Unit = out.println(m)
   def error(e:Throwable):Unit = {
     error(e.toString)
     e.getStackTrace.foreach{st => error(st.toString)}

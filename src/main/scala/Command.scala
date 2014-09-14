@@ -10,7 +10,7 @@ object Command {
   import scala.util.parsing.combinator._
 
   object Parser extends RegexParsers {
-    val ALL = ("""exit|quit|:?q""".r ^^ {q => Quit}) | (":info" ^^ {_ => Info }) | ("[^:].*".r ^^ {q => Query(q)})
+    val ALL = ("""exit|quit|:?q""".r ^^ {q => Quit}) | (":info" ^^ {_ => Info }) | (":help|\\?".r ^^ {_ => Help} ) | ("[^:].*".r ^^ {q => Query(q)})
     def parse(content:String) = parseAll(ALL, content)
   }
 
@@ -25,6 +25,17 @@ object Command {
     ctx.out.result(s"DRIVER: ${meta.getDriverName} ${meta.getDriverVersion} ${ctx.con.getClass.getName}")
     ctx.out.result(s"METADATA: ${meta}")
     ctx.out.result(s"CLIENT INFO: ${ctx.con.getClientInfo}")
+    false
+  }
+  val Help = Command {ctx =>
+    ctx.out.message(
+      """
+      |Commands:
+      |  exit, quit, :q - Quit
+      |  :info - Show connection information
+      |  :help - Show this message
+      |  other string - Execute query. The query should end with ";" character. Can be multilined.
+      """.stripMargin)
     false
   }
   def Query(q:String) = Command {ctx =>
