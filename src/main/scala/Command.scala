@@ -28,11 +28,21 @@ object Command {
     false
   }
   def Query(q:String) = Command {ctx =>
+    def isComplete(q:String):Boolean = ";$".r.findFirstIn(q).isEmpty.unary_!
+    def readCompleteQuery(initial:String):String = {
+      var query = initial
+      while(!isComplete(query)) {
+        query += "\n"
+        query += ctx.in.readLine("SQL >")
+      }
+      query
+    }
+    val query = readCompleteQuery(q)
     val con = ctx.con
     try {
       for {
         st <- using(con.createStatement())
-        result <- using(st.executeQuery(q))
+        result <- using(st.executeQuery(query))
       } {
         ctx.out.result(result)
       }
