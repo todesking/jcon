@@ -33,7 +33,7 @@ object Command {
       var query = initial
       while(!isComplete(query)) {
         query += "\n"
-        query += ctx.in.readLine("SQL >")
+        query += ctx.in.readLine("  -> ")
       }
       query
     }
