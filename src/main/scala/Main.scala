@@ -39,8 +39,8 @@ object Main {
     new scala.tools.jline.console.ConsoleReader(System.in, new java.io.PrintWriter(System.out), terminal)
 
   def runREPL(ctx:Context):Unit = {
-    val break = readCommand(ctx.in).execute(ctx)
-    if(break) return
+    val quit = readCommand(ctx.in).execute(ctx)
+    if(quit) return
     else runREPL(ctx)
   }
 
