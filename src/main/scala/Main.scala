@@ -29,20 +29,32 @@ object Main {
       println(s"connecting to url: ${args.url()}")
       val url = args.url()
 
-      val props = new java.util.Properties()
-      args.user.foreach(props.setProperty("user", _))
-      args.password.foreach(props.setProperty("password", _))
-
       for {
-        con <- using(java.sql.DriverManager.getConnection(url, props))
         terminal <- using[scala.tools.jline.Terminal](scala.tools.jline.TerminalFactory.create(), _.restore())
+        out <- Some(new Out(System.out, terminal))
+        con <- createConnection(args, out)
+        con <- using(con)
       } {
         registerSignal("CONT"){()=> terminal.reset() }
         terminal.init()
-        val ctx = new Context(con, new Out(System.out, terminal), createReader(terminal))
+        val ctx = new Context(con, out, createReader(terminal))
         ctx.out.message("type :help or ? to show usage")
         runREPL(ctx)
       }
+    }
+  }
+
+  def createConnection(args:Args, out:Out):Option[java.sql.Connection] = {
+    val props = new java.util.Properties()
+    args.user.foreach(props.setProperty("user", _))
+    args.password.foreach(props.setProperty("password", _))
+
+    try {
+      Some(java.sql.DriverManager.getConnection(args.url(), props))
+    } catch {
+      case e:java.sql.SQLException =>
+        out.error(s"Unable to connect: ${args.url()}")
+        None
     }
   }
 
