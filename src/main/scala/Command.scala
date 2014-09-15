@@ -48,14 +48,24 @@ object Command {
       }
       query
     }
+    def showResults(st:java.sql.Statement):Unit = {
+      while(showResult(st)) st.getMoreResults()
+    }
+    def showResult(st:java.sql.Statement):Boolean = {
+      val rs = st.getResultSet
+      val count = st.getUpdateCount
+      if(rs != null) { using(rs) {rs => ctx.out.result(rs)}; true }
+      else if(count != -1) {ctx.out.updateResult(count); true}
+      else false
+    }
     val query = readCompleteQuery(q)
     val con = ctx.con
     try {
       for {
         st <- using(con.createStatement())
-        result <- using(st.executeQuery(query))
       } {
-        ctx.out.result(result)
+        st.execute(query)
+        showResults(st)
       }
     } catch {
       case e:java.sql.SQLException => ctx.out.error(e)

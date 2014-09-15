@@ -31,6 +31,10 @@ class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) 
     }
   }
 
+  def updateResult(count:Int):Unit = {
+    result(s"${count} rows changed")
+  }
+
   def result(res:java.sql.ResultSet):Unit = {
     val meta = res.getMetaData
     val cols = for(i1 <- 1 to meta.getColumnCount) yield (i1, meta.getColumnName(i1))
