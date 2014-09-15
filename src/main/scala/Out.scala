@@ -19,7 +19,7 @@ class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) 
   }
 
   def calcWidths(cols:Seq[(Int, String)], rows:Seq[Seq[String]], terminalWidth:Int):Seq[Int] = {
-    val raw = cols.map{case (i1, name) => Math.max(name.displayWidth, rows.map{r => r(i1 - 1).displayWidth}.max)}
+    val raw = cols.map{case (i1, name) => Math.max(name.displayWidth, rows.map{r => r(i1 - 1).displayWidth}.++(Seq(0)).max)}
     optimize(raw, terminalWidth)
   }
 
