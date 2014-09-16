@@ -26,8 +26,11 @@ class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) 
   def optimize(ws:Seq[Int], max:Int) = {
     if(ws.sum <= max) ws
     else {
-      val maxWidth = 30
-      ws.map {w => Math.min(w, maxWidth)}
+      val base = max / ws.size
+      val ws2 = ws.map {w => (w, Math.min(w, base))}
+      val rest = max - ws2.map{case (p, r) => r}.sum
+      val div = ws2.map{case (p,r) => p - r}.sum
+      ws2.map{case (prefer, real) => real + rest * (prefer - real) / div}
     }
   }
 
