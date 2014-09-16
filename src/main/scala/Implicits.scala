@@ -8,8 +8,10 @@ object Implicits extends scalaz.syntax.ToIdOps {
     def foreach(f:A => Unit) = apply(f)
   }
 
-  def using[A <: HasClose](resource:A):Using[A] =
+  def using[A <: HasClose](resource:A):Using[A] = {
+    import scala.language.reflectiveCalls
     using(resource, _.close())
+  }
   def using[A](resource:A, close:A => Unit) =
     new Using(resource, close)
 
