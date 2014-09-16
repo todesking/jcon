@@ -12,3 +12,11 @@ libraryDependencies ++= Seq(
   "org.rogach" %% "scallop" % "0.9.5",
   "com.h2database" % "h2" % "1.4.181"
 )
+
+resolvers += "linter" at "http://hairyfotr.github.io/linteRepo/releases"
+
+addCompilerPlugin("com.foursquare.lint" %% "linter" % "0.1-SNAPSHOT")
+
+org.scalastyle.sbt.ScalastylePlugin.Settings
+
+scalacOptions ++= Seq("-deprecation", "-feature")
