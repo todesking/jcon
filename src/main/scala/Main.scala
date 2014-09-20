@@ -53,7 +53,7 @@ object Main {
       Some(java.sql.DriverManager.getConnection(args.url(), props))
     } catch {
       case e:java.sql.SQLException =>
-        out.error(s"Unable to connect: ${args.url()}")
+        out.error(s"Unable to connect: ${args.url()}. ${e.getMessage}")
         None
     }
   }
