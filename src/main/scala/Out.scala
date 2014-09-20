@@ -44,7 +44,7 @@ class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) 
     val cols = for(i1 <- 1 to meta.getColumnCount) yield (i1, meta.getColumnName(i1))
     val rows = scala.collection.mutable.ArrayBuffer.empty[Seq[String]]
     while(res.next()) {
-      rows += (for { (i1, _) <- cols } yield res.getString(i1))
+      rows += (for { (i1, _) <- cols } yield Option(res.getString(i1)) getOrElse "NULL" )
     }
     val displayWidth = terminal.getWidth
     var widths = calcWidths(cols, rows, displayWidth)
