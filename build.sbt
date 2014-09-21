@@ -12,9 +12,13 @@ libraryDependencies ++= Seq(
   "org.rogach" %% "scallop" % "0.9.5"
 )
 
-libraryDependencies += "com.h2database" % "h2" % "1.4.181"
-
-libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.32"
+/** JDBC drivers **/
+libraryDependencies ++= Seq(
+  "com.h2database" % "h2" % "1.4.181",
+  "org.xerial" % "sqlite-jdbc" % "3.7.2",
+  "mysql" % "mysql-connector-java" % "5.1.32",
+  "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
+)
 
 resolvers += "linter" at "http://hairyfotr.github.io/linteRepo/releases"
 
