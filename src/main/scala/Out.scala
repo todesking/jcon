@@ -54,7 +54,7 @@ class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) 
       val subRows:Seq[Seq[String]] = row.map(_.split("\n").toSeq).quadrilateralize("").transpose
       val maxHeight = subRows.map(_.size).max
       subRows.zipWithIndex.foreach {case (row, i) =>
-        val sep = if(i == 0) "|" else ">"
+        val sep = if(i == 0) "|" else ":"
         result(s"$sep " + row.zipWithIndex.map{case (r, i) => r.pad(widths(i), ' ', "...")}.mkString(s" $sep ") + " |")
       }
     }
