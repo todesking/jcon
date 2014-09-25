@@ -1,3 +1,7 @@
+import com.typesafe.sbt.SbtNativePackager._
+
+import NativePackagerKeys._
+
 organization := "com.todesking"
 
 name := "jcon"
@@ -24,6 +28,8 @@ resolvers += "linter" at "http://hairyfotr.github.io/linteRepo/releases"
 
 addCompilerPlugin("com.foursquare.lint" %% "linter" % "0.1-SNAPSHOT")
 
-org.scalastyle.sbt.ScalastylePlugin.Settings
-
 scalacOptions ++= Seq("-deprecation", "-feature")
+
+
+packageArchetype.java_application
+
