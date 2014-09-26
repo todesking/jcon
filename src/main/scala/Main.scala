@@ -30,7 +30,7 @@ object Main {
       val url = args.url()
 
       for {
-        terminal <- using[scala.tools.jline.Terminal](scala.tools.jline.TerminalFactory.create(), _.restore())
+        terminal <- using[jline.Terminal](jline.TerminalFactory.create(), _.restore())
         out <- Some(new Out(System.out, terminal))
         con <- createConnection(args, out)
         con <- using(con)
@@ -58,8 +58,8 @@ object Main {
     }
   }
 
-  def createReader(terminal:scala.tools.jline.Terminal) =
-    new scala.tools.jline.console.ConsoleReader(System.in, new java.io.PrintWriter(System.out), terminal)
+  def createReader(terminal:jline.Terminal) =
+    new jline.console.ConsoleReader(System.in, System.out, terminal)
 
   def runREPL(ctx:Context):Unit = {
     val quit = readCommand(ctx.in).execute(ctx)
@@ -67,7 +67,7 @@ object Main {
     else runREPL(ctx)
   }
 
-  def readCommand(reader:scala.tools.jline.console.ConsoleReader):Command = {
+  def readCommand(reader:jline.console.ConsoleReader):Command = {
     val line = reader.readLine("JDBC> ")
     if(line == null) return Command.Quit
     else Command.parse(line)

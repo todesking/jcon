@@ -2,7 +2,7 @@ package com.todesking.jcon
 
 import Implicits._
 
-class Out(val out:java.io.PrintStream, val terminal:scala.tools.jline.Terminal) {
+class Out(val out:java.io.PrintStream, val terminal:jline.Terminal) {
   def message(m:String):Unit = out.println(m)
   def error(e:Throwable):Unit = {
     error(e.toString)
