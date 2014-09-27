@@ -77,6 +77,7 @@ class Out(val out:java.io.PrintStream, val terminal:jline.Terminal) {
     rowsep()
     rows.foreach(outRow(_))
     rowsep()
+    result(s"${rows.size} rows in set")
   }
 }
 
