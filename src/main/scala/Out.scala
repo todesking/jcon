@@ -39,6 +39,20 @@ class Out(val out:java.io.PrintStream, val terminal:jline.Terminal) {
     result(s"${count} rows changed")
   }
 
+  def result(st:java.sql.Statement):Unit = {
+    while(result1(st)) st.getMoreResults()
+  }
+
+  def result1(st:java.sql.Statement):Boolean = {
+    val count = st.getUpdateCount
+    if(count != -1) {updateResult(count); true}
+    else {
+      val rs = st.getResultSet
+      if(rs != null) { using(rs) {rs => result(rs)}; true }
+      else false
+    }
+  }
+
   def result(res:java.sql.ResultSet):Unit = {
     val meta = res.getMetaData
     val cols = for(i1 <- 1 to meta.getColumnCount) yield (i1, meta.getColumnName(i1))
