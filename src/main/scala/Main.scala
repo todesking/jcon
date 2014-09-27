@@ -5,6 +5,14 @@ import java.sql.Connection
 
 import Implicits._
 
+object DriverLoader {
+  val defaultUninitializedDriverClasses = Set("org.sqlite.JDBC")
+
+  def initialize():Unit = {
+    defaultUninitializedDriverClasses.foreach(Class.forName(_))
+  }
+}
+
 object Main {
   class Args(raw:Array[String]) extends ScallopConf(raw) {
     val user = opt[String]()
@@ -28,6 +36,8 @@ object Main {
     } else {
       println(s"connecting to url: ${args.url()}")
       val url = args.url()
+
+      DriverLoader.initialize()
 
       for {
         terminal <- using[jline.Terminal](jline.TerminalFactory.create(), _.restore())
