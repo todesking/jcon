@@ -4,6 +4,7 @@ import org.rogach.scallop.ScallopConf
 import java.sql.Connection
 
 import Implicits._
+import scala.collection.JavaConverters._
 
 object DriverLoader {
   val defaultUninitializedDriverClasses = Set("org.sqlite.JDBC")
@@ -17,7 +18,9 @@ object Main {
   class Args(raw:Array[String]) extends ScallopConf(raw) {
     val user = opt[String]()
     val password = opt[String]()
-    val url = trailArg[String]()
+    val url = trailArg[String](required = false)
+
+    val drivers = opt[Boolean]()
   }
 
   def registerSignal(sig:String)(handler:() =>Unit):Unit = {
@@ -31,7 +34,11 @@ object Main {
 
   def main(raw:Array[String]):Unit = {
     val args = new Args(raw)
-    if(!args.url.supplied) {
+    if(args.drivers()) {
+      java.sql.DriverManager.getDrivers.asScala.foreach {driver =>
+        println(s"  ${driver.getClass.getName}")
+      }
+    } else if(!args.url.supplied) {
       args.printHelp()
     } else {
       println(s"connecting to url: ${args.url()}")
