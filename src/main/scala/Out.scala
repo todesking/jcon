@@ -47,7 +47,8 @@ class Out(val out:java.io.PrintStream, val terminal:jline.Terminal) {
     val count = st.getUpdateCount
     if(count != -1) {updateResult(count); true}
     else {
-      val rs = st.getResultSet
+      // Some jdbc driver(sqlite) throws SQLException when result set is not available
+      val rs = try { st.getResultSet } catch { case e:java.sql.SQLException => null }
       if(rs != null) { using(rs) {rs => result(rs)}; true }
       else false
     }
