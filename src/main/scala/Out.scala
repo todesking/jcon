@@ -37,6 +37,7 @@ class Out(val out:java.io.PrintStream, val terminal:jline.Terminal) {
 
   def updateResult(count:Int):Unit = {
     result(s"${count} rows changed")
+    result("")
   }
 
   def result(st:java.sql.Statement):Unit = {
@@ -79,6 +80,7 @@ class Out(val out:java.io.PrintStream, val terminal:jline.Terminal) {
     rows.foreach(outRow(_))
     rowsep()
     result(s"${rows.size} rows in set")
+    result("")
   }
 }
 
