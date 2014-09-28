@@ -42,6 +42,8 @@ class Out(val out:java.io.PrintStream, val terminal:jline.Terminal) {
 
     val meta = res.getMetaData
 
+    table.calcDisplayWidth = _.displayWidth
+
     table.setHeader(
       (1 to meta.getColumnCount).map(meta.getColumnName(_)) )
 
