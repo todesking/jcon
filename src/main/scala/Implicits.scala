@@ -15,17 +15,6 @@ object Implicits extends scalaz.syntax.ToIdOps {
   def using[A](resource:A, close:A => Unit) =
     new Using(resource, close)
 
-  implicit class SeqOfSeq[A](self:Seq[Seq[A]]) {
-    def quadrilateralize(default:A):Seq[Seq[A]] = {
-      val w = self.toIterator.map(_.size).max
-      self.map {row =>
-        for(c <- 0 until w) yield {
-          if(c < row.size) row(c) else default
-        }
-      }
-    }
-  }
-
   implicit class StringExt(self:String) {
     def displayWidth0:Int = {
       val halfs = """[\u0000-\u007f]""".r.findAllIn(self).size
