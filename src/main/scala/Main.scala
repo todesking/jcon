@@ -12,12 +12,16 @@ object Main {
     val url = trailArg[String](required = false)
 
     val drivers = opt[Boolean]()
+
+    def createConfig():Config = {
+      Config.default
+    }
   }
 
   def main(raw:Array[String]):Unit = {
     val args = new Args(raw)
     if(args.drivers()) {
-      val config = new Config()
+      val config = args.createConfig()
       DriverLoader.initialize(config)
       DriverLoader.drivers.foreach {driver =>
         println(s"  ${DriverProxy.unwrap(driver).getClass.getName}")
@@ -25,7 +29,7 @@ object Main {
     } else if(!args.url.supplied) {
       args.printHelp()
     } else {
-      val config = new Config()
+      val config = args.createConfig()
       DriverLoader.initialize(config)
 
       println(s"connecting to url: ${args.url()}")
