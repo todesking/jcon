@@ -6,12 +6,67 @@ import java.sql.Connection
 import Implicits._
 import scala.collection.JavaConverters._
 
-object DriverLoader {
-  val defaultUninitializedDriverClasses = Set("org.sqlite.JDBC")
+class DriverProxy(val original:java.sql.Driver) extends java.sql.Driver {
+  def acceptsURL(x$1: String): Boolean = original.acceptsURL(x$1)
+  def connect(x$1: String,x$2: java.util.Properties): java.sql.Connection = original.connect(x$1, x$2)
+  def getMajorVersion(): Int = original.getMinorVersion()
+  def getMinorVersion(): Int = original.getMinorVersion()
+  def getParentLogger(): java.util.logging.Logger = original.getParentLogger()
+  def getPropertyInfo(x$1: String,x$2: java.util.Properties): Array[java.sql.DriverPropertyInfo] = original.getPropertyInfo(x$1, x$2)
+  def jdbcCompliant(): Boolean = original.jdbcCompliant()
+}
 
-  def initialize():Unit = {
-    defaultUninitializedDriverClasses.foreach(Class.forName(_))
+object DriverProxy {
+  import java.sql.Driver
+
+  def wrapIfNeeded(driver:Driver, classloader:ClassLoader):Driver = driver match {
+    case d if d.getClass != (try { Class.forName(d.getClass.getName, true, classloader) } catch { case e:ClassNotFoundException => null }) =>
+      new DriverProxy(d)
+    case d => d
   }
+  def unwrap(driver:Driver):Driver = driver match {
+    case d:DriverProxy => d.original
+    case d => d
+  }
+}
+
+object DriverLoader {
+  import java.sql.{DriverManager, Driver, Connection}
+
+  def getConnection(url:String, properties:java.util.Properties):Connection = {
+    DriverManager.getConnection(url, properties)
+  }
+
+  def drivers():Seq[Driver] = DriverManager.getDrivers.asScala.toSeq
+
+  def initialize(config:Config):Unit = {
+    val systemClassLoader = getClass.getClassLoader
+    val driverClassLoader = java.net.URLClassLoader.newInstance(config.driverJars.map(_.toURI.toURL).toArray, systemClassLoader)
+
+    def register(driver:Driver) = DriverManager.registerDriver(DriverProxy.wrapIfNeeded(driver, systemClassLoader))
+
+    // initialize driver classes not supported JDBC4's service discovery mechanism
+    config.uninitializedDriverClasses.foreach { klass =>
+      register(Class.forName(klass, true, driverClassLoader).newInstance.asInstanceOf[Driver])
+    }
+
+    // initialize driver classes via service loader
+    val serviceLoader = java.util.ServiceLoader.load(classOf[java.sql.Driver], driverClassLoader)
+
+    val loadedDrivers:Set[Class[_]] = DriverManager.getDrivers.asScala.map(_.getClass).toSet
+    serviceLoader.iterator.asScala.filter{ driver => !loadedDrivers.contains(driver.getClass) }.foreach { driver => register(driver) }
+  }
+}
+
+class Config {
+  import java.io.File
+  lazy val userDir:File = new File(System.getProperty("user.home"), ".jcon")
+  lazy val driverDir:File = new File(userDir, "drivers")
+  lazy val defaultUninitializedDriverClasses:Set[String] = Set("org.sqlite.JDBC")
+  lazy val uninitializedDriverClasses:Set[String] = defaultUninitializedDriverClasses
+
+  def driverJars:Array[File] =
+    Option(driverDir.listFiles()) getOrElse Array() filter {f => f.getName.endsWith(".jar") && f.isFile() }
 }
 
 object Main {
@@ -35,16 +90,20 @@ object Main {
   def main(raw:Array[String]):Unit = {
     val args = new Args(raw)
     if(args.drivers()) {
-      java.sql.DriverManager.getDrivers.asScala.foreach {driver =>
-        println(s"  ${driver.getClass.getName}")
+      val config = new Config()
+      DriverLoader.initialize(config)
+      DriverLoader.drivers.foreach {driver =>
+        println(s"  ${DriverProxy.unwrap(driver).getClass.getName}")
       }
     } else if(!args.url.supplied) {
       args.printHelp()
     } else {
-      println(s"connecting to url: ${args.url()}")
-      val url = args.url()
+      val config = new Config()
+      DriverLoader.initialize(config)
 
-      DriverLoader.initialize()
+      println(s"connecting to url: ${args.url()}")
+
+      val url = args.url()
 
       for {
         terminal <- using[jline.Terminal](jline.TerminalFactory.create(), _.restore())
@@ -67,7 +126,7 @@ object Main {
     args.password.foreach(props.setProperty("password", _))
 
     try {
-      Some(java.sql.DriverManager.getConnection(args.url(), props))
+      Some(DriverLoader.getConnection(args.url(), props))
     } catch {
       case e:java.sql.SQLException =>
         out.error(s"Unable to connect: ${args.url()}. ${e.getMessage}")
