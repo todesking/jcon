@@ -13,8 +13,14 @@ object Main {
 
     val drivers = opt[Boolean]()
 
+    val driverDir = opt[String]()
+    val driverClasses = opt[String]()
+
     def createConfig():Config = {
-      Config.default
+      var conf = Config.default
+      if(driverDir.supplied) conf = conf.copy(driverDir = new java.io.File(driverDir()))
+      if(driverClasses.supplied) conf = conf.copy(uninitializedDriverClasses = conf.uninitializedDriverClasses ++ driverClasses().split(","))
+      conf
     }
   }
 
