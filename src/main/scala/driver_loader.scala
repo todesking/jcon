@@ -42,6 +42,9 @@ object DriverLoader {
 
     def register(driver:Driver) = DriverManager.registerDriver(DriverProxy.wrapIfNeeded(driver, systemClassLoader))
 
+    // First, clear all auto loaded drivers
+    deregisterAllDrivers()
+
     // initialize driver classes not supported JDBC4's service discovery mechanism
     config.uninitializedDriverClasses.foreach { klass =>
       register(Class.forName(klass, true, driverClassLoader).newInstance.asInstanceOf[Driver])
@@ -50,8 +53,11 @@ object DriverLoader {
     // initialize driver classes via service loader
     val serviceLoader = java.util.ServiceLoader.load(classOf[java.sql.Driver], driverClassLoader)
 
-    val loadedDrivers:Set[Class[_]] = DriverManager.getDrivers.asScala.map(_.getClass).toSet
-    serviceLoader.iterator.asScala.filter{ driver => !loadedDrivers.contains(driver.getClass) }.foreach { driver => register(driver) }
+    serviceLoader.iterator.asScala.foreach { driver => register(driver) }
+  }
+
+  def deregisterAllDrivers():Unit = {
+    drivers().foreach { d => DriverManager.deregisterDriver(d) }
   }
 }
 
