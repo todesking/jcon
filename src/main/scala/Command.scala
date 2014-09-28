@@ -10,7 +10,7 @@ object Command {
   import scala.util.parsing.combinator._
 
   object Parser extends RegexParsers {
-    val ALL = ("""exit|quit|:?q""".r ^^ {q => Quit}) | (":info" ^^ {_ => Info }) | (":help|\\?".r ^^ {_ => Help} ) | ("[^:].*".r ^^ {q => Query(q)})
+    val ALL = ("""exit|quit|:?q""".r ^^ {q => Quit}) | (":info" ^^ {_ => Info }) | (":help|\\?".r ^^ {_ => Help} ) | ("[^:].*".r ^^ {q => Query(q)}) | ("" ^^ {_=> Empty})
     def parse(content:String) = parseAll(ALL, content)
   }
 
@@ -19,6 +19,7 @@ object Command {
   }
 
   def SyntaxError(line:String) = Command {ctx => ctx.out.error(s"Syntax error: ${line}"); false}
+  val Empty = Command { _ => false }
   val Quit = Command {ctx => ctx.out.result("BYE"); true}
   val Info = Command {ctx =>
     val meta = ctx.con.getMetaData
