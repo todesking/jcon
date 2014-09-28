@@ -19,8 +19,8 @@ libraryDependencies ++= Seq(
 /** JDBC drivers **/
 libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.181",
-  //"org.xerial" % "sqlite-jdbc" % "3.7.2",
-  // "mysql" % "mysql-connector-java" % "5.1.32",
+  "org.xerial" % "sqlite-jdbc" % "3.7.2",
+   "mysql" % "mysql-connector-java" % "5.1.32",
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
 )
 
