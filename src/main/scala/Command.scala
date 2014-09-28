@@ -29,13 +29,11 @@ object Command {
   }
   val Help = Command {ctx =>
     ctx.out.message(
-      """
-      |Commands:
+      """Commands:
       |  exit, quit, :q - Quit
       |  :info - Show connection information
       |  :help - Show this message
-      |  other string - Execute query. The query should end with ";" character. Can be multilined.
-      """.stripMargin)
+      |  other string - Execute query. The query should end with ";" character. Can be multilined.""".stripMargin)
     false
   }
   def Query(q:String) = Command {ctx =>

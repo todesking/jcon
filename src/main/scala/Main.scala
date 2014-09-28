@@ -71,7 +71,7 @@ object Main {
   }
 
   def readCommand(reader:jline.console.ConsoleReader):Command = {
-    val line = reader.readLine("JDBC> ")
+    val line = reader.readLine("\nJDBC> ")
     if(line == null) return Command.Quit
     else Command.parse(line)
   }
