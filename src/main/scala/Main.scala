@@ -1,7 +1,9 @@
 package com.todesking.jcon
 
 import org.rogach.scallop.ScallopConf
+
 import java.sql.Connection
+import java.io.File
 
 import Implicits._
 
@@ -17,9 +19,16 @@ object Main {
     val driverClasses = opt[String]()
 
     def createConfig():Config = {
-      var conf = Config.default
-      if(driverDir.supplied) conf = conf.copy(driverDir = new java.io.File(driverDir()))
-      if(driverClasses.supplied) conf = conf.copy(uninitializedDriverClasses = conf.uninitializedDriverClasses ++ driverClasses().split(","))
+      var conf:Config = DefaultConfig
+      val args = this
+
+      if(driverDir.supplied)
+        conf = new NestedConfig(conf) { override val driverDir = new File(args.driverDir()) }
+
+      if(driverClasses.supplied)
+        conf = new NestedConfig(conf) {
+          override val uninitializedDriverClasses = parent.uninitializedDriverClasses ++ args.driverClasses().split(",")
+        }
       conf
     }
   }
