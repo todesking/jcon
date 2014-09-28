@@ -15,7 +15,7 @@ object DefaultConfig extends Config {
   override val userDir:File = new File(System.getProperty("user.home"), ".jcon")
   override val driverDir:File = new File(userDir, "drivers")
   override val uninitializedDriverClasses:Set[String] = Set("org.sqlite.JDBC")
-  override val historyFile:Option[File] = None
+  override val historyFile:Option[File] = Some(new File(userDir, "history"))
 }
 
 class NestedConfig(val parent:Config) extends Config {

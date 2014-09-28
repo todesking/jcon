@@ -53,16 +53,24 @@ object Main {
 
       for {
         terminal <- using[jline.Terminal](jline.TerminalFactory.create(), _.restore())
+        reader <- using[jline.console.ConsoleReader](createReader(terminal, config.historyFile), closeConsoleReader(_))
         out <- Some(new Out(System.out, terminal))
         con <- createConnection(args, out)
         con <- using(con)
       } {
         Signal.registerHandler("CONT"){()=> terminal.reset() }
         terminal.init()
-        val ctx = new Context(con, out, createReader(terminal))
+        val ctx = new Context(con, out, reader)
         ctx.out.message("type :help or ? to show usage")
         runREPL(ctx)
       }
+    }
+  }
+
+  def closeConsoleReader(reader:jline.console.ConsoleReader):Unit = {
+    reader.getHistory match {
+      case h:jline.console.history.FileHistory => h.flush()
+      case _ =>
     }
   }
 
@@ -80,8 +88,11 @@ object Main {
     }
   }
 
-  def createReader(terminal:jline.Terminal) =
-    new jline.console.ConsoleReader(System.in, System.out, terminal)
+  def createReader(terminal:jline.Terminal, historyFile:Option[File]) = {
+    val reader = new jline.console.ConsoleReader(System.in, System.out, terminal)
+    historyFile.foreach { h => reader.setHistory(new jline.console.history.FileHistory(h)) }
+    reader
+  }
 
   def runREPL(ctx:Context):Unit = {
     val quit = readCommand(ctx.in).execute(ctx)
