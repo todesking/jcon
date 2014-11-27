@@ -1,5 +1,16 @@
 # JCON: Generic JDBC console
 
+## Install
+
+The project used [Conscript](https://github.com/n8han/conscript) package manager.
+To install conscript, see [installation manual](https://github.com/n8han/conscript#installation).
+
+And execute
+
+```
+cs todesking/jcon
+```
+
 ## USAGE
 
 ### Common Options
