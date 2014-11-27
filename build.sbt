@@ -1,14 +1,12 @@
-import com.typesafe.sbt.SbtNativePackager._
-
-import NativePackagerKeys._
+seq(conscriptSettings :_*)
 
 organization := "com.todesking"
 
 name := "jcon"
 
-version := "0.0.0"
+version := "0.0.0-SNAPSHOT"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.4"
 
 libraryDependencies ++= Seq(
   "jline" % "jline" % "2.11",
@@ -29,7 +27,4 @@ resolvers += "linter" at "http://hairyfotr.github.io/linteRepo/releases"
 addCompilerPlugin("com.foursquare.lint" %% "linter" % "0.1-SNAPSHOT")
 
 scalacOptions ++= Seq("-deprecation", "-feature")
-
-
-packageArchetype.java_application
 

@@ -1,0 +1,11 @@
+[app]
+  version: 0.0.0-SNAPSHOT
+  org: com.todesking
+  name: jcon
+  class: com.todesking.jcon.Main
+[scala]
+  version: 2.11.4
+[repositories]
+  local
+  scala-tools-releases
+  maven-central
