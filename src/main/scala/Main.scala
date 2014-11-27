@@ -41,7 +41,7 @@ object Main {
   }
 
   def main(raw: Array[String]):Unit = {
-    run(raw)
+    System.exit(run(raw))
   }
 
   def run(raw: Array[String]): Int = {
