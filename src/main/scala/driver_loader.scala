@@ -3,6 +3,15 @@ package com.todesking.jcon
 import Implicits._
 import scala.collection.JavaConverters._
 
+/*
+ https://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html
+ "When the method getConnection is called, the DriverManager will attempt to locate a suitable driver from amongst those loaded at initialization and those loaded explicitly using the same classloader as the current applet or application."
+
+ For that reason, we need wrap some drivers.
+
+ See http://www.kfu.com/~nsayer/Java/dyn-jdbc.html
+*/
+
 class DriverProxy(val original:java.sql.Driver) extends java.sql.Driver {
   def acceptsURL(x$1: String): Boolean = original.acceptsURL(x$1)
   def connect(x$1: String,x$2: java.util.Properties): java.sql.Connection = original.connect(x$1, x$2)
@@ -42,17 +51,19 @@ object DriverLoader {
 
     def register(driver:Driver) = DriverManager.registerDriver(DriverProxy.wrapIfNeeded(driver, systemClassLoader))
 
-    // First, clear all auto loaded drivers
-    deregisterAllDrivers()
-
-    // initialize driver classes not supported JDBC4's service discovery mechanism
-    config.uninitializedDriverClasses.foreach { klass =>
-      register(Class.forName(klass, true, driverClassLoader).newInstance.asInstanceOf[Driver])
+    // initialize driver classes that not supported JDBC4's service discovery mechanism
+    val unmanagedDrivers = config.uninitializedDriverClasses.map { klass =>
+      Class.forName(klass, true, driverClassLoader).newInstance.asInstanceOf[Driver]
     }
 
-    // initialize driver classes via service loader
-    val serviceLoader = java.util.ServiceLoader.load(classOf[java.sql.Driver], driverClassLoader)
+    // Clear current registered drivers. Because they are not wrapped.
+    deregisterAllDrivers()
 
+    // Register unmanaged drivers
+    unmanagedDrivers.foreach { driver => register(driver) }
+
+    // Register drivers via ServiceLoader
+    val serviceLoader = java.util.ServiceLoader.load(classOf[java.sql.Driver], driverClassLoader)
     serviceLoader.iterator.asScala.foreach { driver => register(driver) }
   }
 
