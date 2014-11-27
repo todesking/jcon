@@ -7,6 +7,13 @@ import java.io.File
 
 import Implicits._
 
+case class Exit(val code: Int) extends xsbti.Exit
+class Main extends xsbti.AppMain {
+  def run(config: xsbti.AppConfiguration) = {
+    Exit(Main.run(config.arguments))
+  }
+}
+
 object Main {
   class Args(raw:Array[String]) extends ScallopConf(raw) {
     val user = opt[String]()
@@ -33,7 +40,11 @@ object Main {
     }
   }
 
-  def main(raw:Array[String]):Unit = {
+  def main(raw: Array[String]):Unit = {
+    run(raw)
+  }
+
+  def run(raw: Array[String]): Int = {
     val args = new Args(raw)
     if(args.drivers()) {
       val config = args.createConfig()
@@ -41,8 +52,10 @@ object Main {
       DriverLoader.drivers.foreach {driver =>
         println(s"  ${DriverProxy.unwrap(driver).getClass.getName}")
       }
+      0
     } else if(!args.url.supplied) {
       args.printHelp()
+      1
     } else {
       val config = args.createConfig()
       DriverLoader.initialize(config)
@@ -64,6 +77,7 @@ object Main {
         ctx.out.message("type :help or ? to show usage")
         runREPL(ctx)
       }
+      0
     }
   }
 
