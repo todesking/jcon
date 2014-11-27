@@ -2,23 +2,46 @@
 
 ## USAGE
 
+### Common Options
+
+* `--driver-dir <dir>`
+  * default: `~/.jcon/drivers/`
+* `--driver-classes <classes>`
+  * ex: `--driver-classes com.example.specialdb,com.example.superdb.Driver`
+
+### Connect to database
+
 ```
 jcon [-p|--password <password>] [-u|--user <user>] <jdbc_url>
 ```
 
-## License
+### List all available drivers
 
-* The software: [GPL V3](./LICENSE)
-* Launcher script(`bin/jcon`, `bin/jcon.bat` in distribution package): Belongs to `sbt-native-packager` plugin. See the [License](https://github.com/sbt/sbt-native-packager/blob/master/LICENSE.md)
-* Scallop: [MIT](https://github.com/scallop/scallop)
-* scalaz: [BSD](https://github.com/scalaz/scalaz)
-* jansi: [ASL 2.0](http://jansi.fusesource.org)
-* jline: [BSD](https://github.com/jline/jline2)
-* Scala runtime: [Scala license](http://www.scala-lang.org/license.html)
+```
+jcon --drivers
+```
 
-### Drivers
+## Default bundled drivers
 
-* Postgres JDBC Driver: [BSD License](http://jdbc.postgresql.org/about/license.html)
-* MySql Connector/J: [GPL](http://dev.mysql.com/downloads/connector/j/)
-* SQLite JDBC Driver: [Apache License version 2.0](https://bitbucket.org/xerial/sqlite-jdbc), and SQLite is [Public Domain](http://www.sqlite.org/copyright.html)
-* H2 Database Engine: [MPL 2.0 or EPL 1.0](http://www.h2database.com/html/license.html)
+* Mysql
+  * `jdbc:mysql://host[:port][/database]`
+  * [Reference](http://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html)
+* SQLite
+  * `jdbc:sqlite:/path/to/file`(file), `jdbc:sqlite::memory`(on-memory database)
+  * [Reference](https://bitbucket.org/xerial/sqlite-jdbc/wiki/Home)
+* H2 Database Engine
+  * `jdbc:h2:/path/to/file` etc.
+  * [Reference](http://www.h2database.com/html/features.html#database_url)
+* Postgres SQL Database
+  * `jdbc:postgressql:[//host[:port]/]database`
+  * [Reference](http://jdbc.postgresql.org/documentation/80/connect.html)
+
+## Not bundled drivers
+
+To use external drivers, put driver jars into jcon's drivers directory(default: `~/.jcon/drivers/`)
+
+* Oracle
+  * [Download](http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html)
+* SQL Server
+  * [Download](http://www.microsoft.com/ja-jp/download/details.aspx?id=11774)
+
