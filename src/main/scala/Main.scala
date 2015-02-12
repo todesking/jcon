@@ -16,6 +16,8 @@ class Main extends xsbti.AppMain {
 
 object Main {
   class Args(raw:Array[String]) extends ScallopConf(raw) {
+    val version = opt[Boolean]()
+
     val user = opt[String]()
     val password = opt[String]()
     val url = trailArg[String](required = false)
@@ -46,7 +48,10 @@ object Main {
 
   def run(raw: Array[String]): Int = {
     val args = new Args(raw)
-    if(args.drivers()) {
+    if(args.version()) {
+      println(s"JCON ${Version.string}")
+      0
+    } else if(args.drivers()) {
       val config = args.createConfig()
       DriverLoader.initialize(config)
       DriverLoader.drivers.foreach {driver =>

@@ -1,5 +1,5 @@
 [app]
-  version: 0.0.0-SNAPSHOT
+  version: 0.0.1
   org: com.todesking
   name: jcon
   class: com.todesking.jcon.Main
@@ -9,3 +9,4 @@
   local
   scala-tools-releases
   maven-central
+  todesking: http://todesking.github.io/mvn/
